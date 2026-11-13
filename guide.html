@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>শিট গাইড · Glamoura</title>
+<meta name="description" content="Clothing Business Tracker শিটের প্রতিটি ট্যাব কী কাজে লাগে, কোথায় লিখবেন, কী অটো।">
+<meta name="theme-color" content="#1d6b4e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="bar"></div>
+<main class="wrap">
+<header><h1>শিট গাইড</h1><p class="sub">কোথায় লিখবেন, কী অটো হয়, আর Pathao-র হিসাব কীভাবে হয়।</p></header>
+
+<section class="card">
+<h2>তিন লাইনে নিয়ম</h2>
+<table>
+<tr><td><b>লিখবেন</b></td><td>নীল হেডারের কলামে, সাদা ঘরে।</td></tr>
+<tr><td><b>লিখবেন না</b></td><td>ধূসর হেডার আর ধূসর ঘর, ওগুলো অটো।</td></tr>
+<tr><td><b>লাল ঘর</b></td><td>কিছু বাদ পড়েছে বা মিলছে না, ঠিক করুন।</td></tr>
+</table>
+</section>
+
+<section class="card">
+<h2>একটি অর্ডারের পথ</h2>
+<ol style="margin:0;padding-left:20px">
+<li>নতুন কাস্টমার হলে <b>Customers</b>-এ লিখুন।</li>
+<li><a href="calc.html">অর্ডার ক্যালকুলেটরে</a> ডেলিভারিসহ দাম দেখে কাস্টমারকে জানান।</li>
+<li><b>Orders</b>-এ লাইন (Status = Pending), <b>Order Items</b>-এ পণ্য।</li>
+<li>কনফার্ম হলে Status = <code>Confirmed</code>, আর Order Items-এর Unit Cost কপি করে <b>Paste values only</b>।</li>
+<li>Pathao-তে পাঠিয়ে Tracking ID বসান। Pathao Cost-এ ক্যালকুলেটরের <i>মোট ডেলিভারি খরচ</i> দিন।</li>
+<li>পৌঁছালে Status = <code>Delivered</code> আর Delivered Date। টাকা এলে Paid? = <code>Paid</code>।</li>
+</ol>
+</section>
+
+<details>
+<summary>Stock In (মাল আসা)</summary>
+<table>
+<tr><th>কলাম</th><th>কী লিখবেন</th></tr>
+<tr><td>Date, Type</td><td>তারিখ। Type = <code>Purchase</code> বা <code>Adjust</code> (গোনায় মিল না থাকলে)।</td></tr>
+<tr><td>Restock SKU</td><td>আগের পণ্য আবার কিনলে এখান থেকে বাছুন।</td></tr>
+<tr><td>Code, Name, Category, Color, Variant</td><td>নতুন পণ্যে লিখুন। Variant যেমন <code>L-45 / C-33</code>।</td></tr>
+<tr><td>Price</td><td>বিক্রয় দাম।</td></tr>
+<tr><td>Qty, Unit Cost</td><td>পিস আর পিসপ্রতি কেনা দাম।</td></tr>
+<tr><td>Extra Cost</td><td>ওই লাইনের মোট ট্রান্সপোর্ট খরচ। <a href="split.html">Extra Cost ভাগ</a> টুলে ভাগ করুন।</td></tr>
+<tr><td>Supplier</td><td>ড্রপডাউন থেকে বাছুন। নতুন সাপ্লায়ারের নাম লিখে দিন।</td></tr>
+<tr><td>Batch</td><td>লটের ID, যেমন <code>B01</code>। Purchase সারিতে ফাঁকা থাকলে লাল।</td></tr>
+<tr><td class="sub">SKU, Total</td><td class="sub">অটো। Total = Qty × Unit Cost + Extra Cost।</td></tr>
+</table>
+</details>
+
+<details>
+<summary>Batches (লট)</summary>
+<p>একই চালানের মালকে একটি লট ধরা হয়। আগে এখানে লট খুলুন, তারপর Stock In-এ Batch বসান।</p>
+<table>
+<tr><td><b>লিখবেন</b></td><td>Batch ID (<code>B01</code>), Name, Date, Supplier, Status (<code>Open</code>/<code>Closed</code>), Notes।</td></tr>
+<tr><td class="sub">অটো</td><td class="sub">SKU সংখ্যা, Purchased, Total Cost, Delivered, Reserved, Available, Sell-through %, Revenue, Item Profit, Cost Recovered %।</td></tr>
+</table>
+<p class="sub">Cost Recovered ১০০%-এর বেশি হলে লটের খরচ উঠে গেছে, তারপর যা বিক্রি হবে সবই লাভ।</p>
+</details>
+
+<details>
+<summary>Customers (কাস্টমার)</summary>
+<table>
+<tr><td><b>লিখবেন</b></td><td>Customer ID (<code>C01</code>), Name, Phone, WhatsApp, Platform, Status, Profile Link, Facebook ID, Address, Other Contact, First Contact Date, First Message, Preferred Payment।</td></tr>
+<tr><td class="sub">অটো</td><td class="sub">Total Orders, Delivered, Total Spent, Last Order Date। Orders-এর Phone (না থাকলে Name) মিলিয়ে আসে।</td></tr>
+</table>
+<p class="sub">Phone দুই জায়গায় একই লিখুন, নইলে অটো হিসাব মিলবে না। নোট রাখতে ঘরে কমেন্ট দিন।</p>
+</details>
+
+<details>
+<summary>Orders ও Order Items</summary>
+<table>
+<tr><th>Orders</th><th></th></tr>
+<tr><td>Date, Order ID, Customer, Phone, Address</td><td>অর্ডারের তথ্য। Phone <code>01XXXXXXXXX</code> ফরম্যাটে।</td></tr>
+<tr><td>Status</td><td><code>Pending</code> → <code>Confirmed</code> → <code>Delivered</code>, অথবা <code>Cancelled</code>।</td></tr>
+<tr><td>Payment, Paid?</td><td>COD/bKash/Nagad/Bank। Paid? = <code>Unpaid</code>/<code>Paid</code>।</td></tr>
+<tr><td>Delivery Charge</td><td>কাস্টমারের কাছ থেকে যা নিলেন।</td></tr>
+<tr><td>Pathao Cost</td><td>কুরিয়ার চার্জ + COD চার্জ, মানে ক্যালকুলেটরের মোট ডেলিভারি খরচ।</td></tr>
+<tr><td>Tracking ID, Delivered Date</td><td>Pathao থেকে।</td></tr>
+<tr><td class="sub">Items Total, Items Cost, Net Profit</td><td class="sub">অটো।</td></tr>
+<tr><th>Order Items</th><th></th></tr>
+<tr><td>Order ID, SKU, Qty, Unit Price</td><td>প্রতি পণ্যে একটি লাইন। SKU ড্রপডাউন থেকে।</td></tr>
+<tr><td>Unit Cost</td><td>ফর্মুলা। Confirmed হলে কপি করে <b>Paste values only</b>, নইলে পরে Avg Cost বদলালে পুরনো অর্ডারের লাভও বদলে যাবে।</td></tr>
+</table>
+<p class="sub">Delivered কিন্তু Unpaid হলে Orders-এর সারি লাল হয়।</p>
+</details>
+
+<details>
+<summary>Products, Dashboard, Reports (অটো)</summary>
+<table>
+<tr><td><b>Products</b></td><td>Stock In থেকে নিজে তৈরি। পণ্যপ্রতি Purchased, Avg Cost, Reserved, Delivered, Available, Stock। কিছু লিখবেন না।</td></tr>
+<tr><td><b>Dashboard</b></td><td>মোট বিক্রি, লাভ, Low/Out stock, Stock value, আর Batch Report (সর্বশেষ ৮ লট)।</td></tr>
+<tr><td><b>Reports</b></td><td>সাপ্তাহিক ও মাসিক ট্রেন্ড। বিক্রি ধরা হয় Delivered Date দিয়ে, সপ্তাহ শনি থেকে শুক্র।</td></tr>
+<tr><td><b>Batch SKUs</b></td><td>লটের হিসাবের সহায়ক ট্যাব, ছোঁবেন না।</td></tr>
+</table>
+</details>
+
+<details open>
+<summary>Pathao হিসাবের নিয়ম</summary>
+<p class="sub">মার্চেন্ট লোকেশন চট্টগ্রাম। রেট Pathao Support থেকে পাওয়া।</p>
+<div class="tbl-scroll"><table>
+<tr><th>রুট</th><th class="n">≤৫০০g</th><th class="n">≤১kg</th><th class="n">≤২kg</th><th class="n">বেশি/kg</th></tr>
+<tr><td>চট্টগ্রাম শহর → চট্টগ্রাম শহর</td><td class="n">৬০</td><td class="n">৭০</td><td class="n">৯০</td><td class="n">১৫</td></tr>
+<tr><td>চট্টগ্রাম → ঢাকা</td><td class="n">১১০</td><td class="n">১৩০</td><td class="n">১৭০</td><td class="n">২৫</td></tr>
+<tr><td>চট্টগ্রাম → অন্য জেলা</td><td class="n">১২০</td><td class="n">১৪৫</td><td class="n">১৮০</td><td class="n">২৫</td></tr>
+</table></div>
+<table style="margin-top:10px">
+<tr><td>COD চার্জ</td><td>পণ্যের দামের ১%।</td></tr>
+<tr><td>২ কেজির বেশি</td><td>২ কেজির দামের সাথে প্রতি শুরু-হওয়া অতিরিক্ত কেজিতে বেশি/kg যোগ।</td></tr>
+<tr><td>Pathao থেকে পাবেন</td><td>COD − কুরিয়ার চার্জ − COD চার্জ।</td></tr>
+<tr><td>নিট লাভ</td><td>পণ্যের দাম + কাস্টমারের চার্জ − কুরিয়ার − COD চার্জ − কেনা দাম − প্যাকিং/বিজ্ঞাপন।</td></tr>
+</table>
+<div class="note" style="margin-top:10px"><b>উদাহরণ:</b> ঢাকায় ২ পিস, ১.২ কেজি, দাম ১,৫৯৮, কাস্টমার ডেলিভারি দেবে। কুরিয়ার ১৭০, COD ১,৭৬৮, COD চার্জ ১৫.৯৮ (১,৫৯৮-এর ১%), Pathao থেকে পাবেন ১,৫৮২.০২।</div>
+<p class="sub" style="margin-top:10px">ফেরত পার্সেলের চার্জ নির্ধারিত নেই। Pathao-র স্টেটমেন্ট দেখে নিজে বসান। একই দিনে ডেলিভারি শুধু ঢাকায়, চট্টগ্রাম থেকে প্রযোজ্য নয়।</p>
+</details>
+
+<details>
+<summary>টুল</summary>
+<table>
+<tr><td><a href="calc.html">অর্ডার ক্যালকুলেটর</a></td><td>পুরো অর্ডারের খরচ, Pathao পাওনা আর লাভ।</td></tr>
+<tr><td><a href="price.html">দাম নির্ধারণ</a></td><td>কাঙ্ক্ষিত লাভের জন্য দাম কত রাখবেন।</td></tr>
+<tr><td><a href="reconcile.html">Pathao হিসাব</a></td><td>সেটেলমেন্ট মেলানো।</td></tr>
+<tr><td><a href="split.html">Extra Cost ভাগ</a></td><td>Stock In-এর Extra Cost কলামের জন্য।</td></tr>
+<tr><td><a href="lot.html">লট প্ল্যানার</a></td><td>লট কেনার আগের হিসাব।</td></tr>
+<tr><td><a href="messages.html">মেসেজ</a></td><td>কাস্টমার ও Pathao Support-এর জন্য।</td></tr>
+</table>
+</details>
+
+<details>
+<summary>সাধারণ প্রশ্ন</summary>
+<p><b>ডেটা কোথায় থাকে?</b> টুলের ইনপুট এই ডিভাইসের ব্রাউজারে, বাইরে কোথাও যায় না। শিটের ডেটা Google Sheets-এ।</p>
+<p><b>রেট বদলালে?</b> অর্ডার ক্যালকুলেটরের "Pathao রেট" অংশে বদলান, সব টুলে কাজ করবে।</p>
+<p><b>মোবাইলে অ্যাপ হিসেবে রাখব?</b> হোম পেজের "অ্যাপ হিসেবে রাখুন" চাপুন, অথবা ব্রাউজার মেনু থেকে Add to Home screen।</p>
+</details>
+</main>
+<script src="assets/common.js"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Glamoura</title>
+<meta name="description" content="Glamoura: অর্ডার, ডেলিভারি আর হিসাবের টুল।">
+<meta name="theme-color" content="#1d6b4e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="bar"></div>
+<main class="wrap">
+  <header>
+    <h1 id="title">Glamoura</h1>
+    <p class="sub" id="subtitle">অর্ডার, ডেলিভারি আর হিসাব, এক জায়গায়।</p>
+  </header>
+
+  <a class="card" id="today" href="checklist.html" style="text-decoration:none;color:inherit;display:block">
+    <div class="top"><b>আজকের Checklist</b><span class="tag" id="todayTxt">—</span></div>
+    <div class="progress" style="margin-top:10px"><i id="todayBar"></i></div>
+  </a>
+
+  <div class="row" style="grid-template-columns:1fr auto;align-items:end">
+    <label>খুঁজুন<input id="q" type="search" placeholder="যেমন ক্যালকুলেটর, Pathao, লট"></label>
+    <button class="btn ghost" id="install" type="button" hidden>অ্যাপ হিসেবে রাখুন</button>
+  </div>
+
+  <div id="groups" class="wrap" style="gap:22px"></div>
+  <p class="note" id="err" hidden>links.json পড়া যায়নি। ফাইলটির লেখা ঠিক আছে কি না দেখুন।</p>
+  <p class="sub" style="font-size:.85rem;text-align:center">Pathao রেট Pathao Support থেকে পাওয়া। বদলালে অর্ডার ক্যালকুলেটরের রেট অংশে ঠিক করুন।</p>
+</main>
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var ICON = {
+    calc: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h0M8 16h2M12 16h2M16 16h0"/>',
+    tag: '<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1"/>',
+    check: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>',
+    split: '<path d="M12 3v6M12 9l-6 6v6M12 9l6 6v6"/>',
+    box: '<path d="M3 8l9-5 9 5v8l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
+    chat: '<path d="M4 5h16v11H9l-5 4z"/>',
+    doc: '<path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
+    link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'
+  };
+  var data = null;
+  function render() {
+    var q = document.getElementById('q').value.trim().toLowerCase(), h = '', any = false;
+    data.groups.forEach(function (g) {
+      var items = g.items.filter(function (i) { return !q || (i.title + ' ' + i.description + ' ' + i.tag).toLowerCase().indexOf(q) > -1; });
+      if (!items.length) return; any = true;
+      h += '<section><h2 style="font-size:.85rem;letter-spacing:.05em;color:var(--muted)">' + G.esc(g.title) + '</h2><div class="grid">' +
+        items.map(function (i) {
+          var ext = /^https?:/.test(i.href);
+          return '<a class="tool" href="' + G.esc(i.href) + '"' + (ext ? ' target="_blank" rel="noopener"' : '') + '><span class="top"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24">' + (ICON[i.icon] || ICON.link) + '</svg></span><span class="tag">' + G.esc(i.tag || '') + '</span></span><span class="t">' + G.esc(i.title) + '</span><span class="d">' + G.esc(i.description || '') + '</span></a>';
+        }).join('') + '</div></section>';
+    });
+    document.getElementById('groups').innerHTML = any ? h : '<p class="sub">কিছু পাওয়া যায়নি।</p>';
+  }
+  fetch('links.json').then(function (r) { return r.json(); }).then(function (d) {
+    data = d;
+    document.getElementById('title').textContent = d.siteTitle || 'Glamoura';
+    if (d.siteSubtitle) document.getElementById('subtitle').textContent = d.siteSubtitle;
+    render();
+  }).catch(function () { document.getElementById('err').hidden = false; });
+  document.getElementById('q').oninput = function () { if (data) render(); };
+
+  var p = G.store.get('gl-progress', null);
+  if (p && p.date === G.today() && p.total) {
+    document.getElementById('todayTxt').textContent = p.done + '/' + p.total;
+    document.getElementById('todayBar').style.width = Math.round(p.done / p.total * 100) + '%';
+  } else document.getElementById('todayTxt').textContent = 'শুরু করুন';
+
+  var dp; window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault(); dp = e; var b = document.getElementById('install'); b.hidden = false;
+    b.onclick = function () { dp.prompt(); b.hidden = true; };
+  });
+})();
+</script>
+</body>
+</html>

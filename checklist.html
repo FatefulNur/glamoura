@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Checklist · Glamoura</title>
+<meta name="description" content="দৈনিক, সাপ্তাহিক ও মাসিক কাজের তালিকা।">
+<meta name="theme-color" content="#1d6b4e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="bar"></div>
+<main class="wrap">
+  <header><h1>Checklist</h1><p class="sub" id="when"></p></header>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="progress" aria-hidden="true"><i id="bar2"></i></div>
+  <p class="sub" id="count"></p>
+  <div id="list" class="wrap" style="gap:14px"></div>
+  <div class="btns"><button class="btn ghost" id="reset" type="button">এই তালিকা নতুন করে শুরু</button></div>
+  <p class="sub" style="font-size:.85rem">দৈনিক তালিকা প্রতিদিন, সাপ্তাহিক প্রতি শনিবার, মাসিক প্রতি মাসের শুরুতে নিজে থেকে খালি হয়। টিক এই ডিভাইসে সংরক্ষিত থাকে।</p>
+</main>
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var KEY = 'gl-checklist-v3';
+  var LISTS = {
+    daily: { label: 'দৈনিক', groups: [
+      ['মাল ও লট', [
+        'নতুন মাল এলে Stock In-এ লাইন যোগ করেছি (Type = Purchase, Batch বসিয়েছি)',
+        'নতুন লট হলে আগে Batches ট্যাবে লট খুলেছি',
+        'মাল কেনার পর Extra Cost (ট্রান্সপোর্ট) হিসাব করে বসিয়েছি']],
+      ['অর্ডার নেওয়া', [
+        'নতুন কাস্টমার হলে Customers ট্যাবে নাম, ফোন আর প্রথম মেসেজ লিখেছি',
+        'অর্ডার ক্যালকুলেটরে ডেলিভারি চার্জ আর COD দেখে কাস্টমারকে জানিয়েছি',
+        'Orders-এ অর্ডার আর Order Items-এ পণ্য লিখেছি',
+        'Confirmed হলে Unit Cost কপি করে Paste values only করেছি']],
+      ['ডেলিভারি ও টাকা', [
+        'Pathao-তে অর্ডার তৈরি করে Tracking ID Orders-এ বসিয়েছি',
+        'Delivered হলে Status আর Delivered Date দিয়েছি',
+        'Cancelled বা ফেরত অর্ডারের Status বদলেছি',
+        'টাকা পেলে Paid? = Paid করেছি, লাল (Unpaid) ঘর দেখেছি']],
+      ['দিন শেষে', [
+        'Dashboard-এ Low/Out stock দেখেছি',
+        'আজকের নতুন সারিতে লাল ঘর নেই']]
+    ]},
+    weekly: { label: 'সাপ্তাহিক', groups: [
+      ['হিসাব', [
+        'Pathao সেটেলমেন্ট হিসাব মেলান পেজে মিলিয়েছি',
+        'Reports-এ গত সপ্তাহের বিক্রি আর লাভ দেখেছি',
+        'পুরনো Pending অর্ডারে কাস্টমারকে ফলো-আপ করেছি']],
+      ['মাল', [
+        'Low/Out stock পণ্যের রিস্টক ঠিক করেছি (Stock In-এ Restock SKU)',
+        'যে পণ্য বিক্রি হচ্ছে না তার দাম বা বিজ্ঞাপন দেখেছি']],
+      ['কাস্টমার', [
+        'Customers ট্যাবে Status আপডেট করেছি (VIP, Inactive, Blocked)']]
+    ]},
+    monthly: { label: 'মাসিক', groups: [
+      ['লট ও লাভ', [
+        'Dashboard-এর Batch Report-এ প্রতিটি লটের Cost Recovered % দেখেছি',
+        'শেষ হয়ে যাওয়া লট Batches-এ Closed করেছি',
+        'লট প্ল্যানারে পরের লটের হিসাব করেছি']],
+      ['যাচাই', [
+        'Pathao-র রেট বা শর্ত বদলেছে কি না দেখেছি (বদলালে ক্যালকুলেটরে ঠিক করেছি)',
+        'হাতে থাকা মাল গুনে Products-এর Stock-এর সাথে মিলিয়েছি',
+        'শিটের একটি ব্যাকআপ কপি রেখেছি (File → Make a copy)']]
+    ]}
+  };
+
+  // period keys (Asia/Dhaka). Week starts Saturday.
+  function periodKey(kind) {
+    var t = G.today();
+    if (kind === 'daily') return t;
+    if (kind === 'monthly') return t.slice(0, 7);
+    var d = new Date(t + 'T00:00:00Z'), back = (d.getUTCDay() + 1) % 7;    // Sat=0
+    d.setUTCDate(d.getUTCDate() - back);
+    return d.toISOString().slice(0, 10);
+  }
+
+  var state = G.store.get(KEY, { tab: 'daily' });
+  Object.keys(LISTS).forEach(function (k) {
+    var pk = periodKey(k);
+    if (!state[k] || state[k].period !== pk) state[k] = { period: pk, done: {} };
+  });
+  var tab = LISTS[state.tab] ? state.tab : 'daily';
+
+  function total(k) { return LISTS[k].groups.reduce(function (s, g) { return s + g[1].length; }, 0); }
+  function done(k) { return Object.keys(state[k].done).filter(function (x) { return state[k].done[x]; }).length; }
+
+  function persist() {
+    state.tab = tab; G.store.set(KEY, state);
+    G.store.set('gl-progress', { date: G.today(), done: done('daily'), total: total('daily') });
+  }
+
+  function draw() {
+    document.getElementById('tabs').innerHTML = Object.keys(LISTS).map(function (k) {
+      return '<button role="tab" type="button" data-k="' + k + '" aria-selected="' + (k === tab) + '">' + LISTS[k].label + ' ' + done(k) + '/' + total(k) + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.onclick = function () { tab = b.dataset.k; persist(); draw(); }; });
+    var L = LISTS[tab], gi = 0, h = '';
+    L.groups.forEach(function (g) {
+      h += '<section class="card"><h2>' + G.esc(g[0]) + '</h2>';
+      g[1].forEach(function (t) {
+        var id = tab + (gi++), on = !!state[tab].done[id];
+        h += '<label class="chk' + (on ? ' done' : '') + '"><input type="checkbox" data-id="' + id + '"' + (on ? ' checked' : '') + '><span>' + G.esc(t) + '</span></label>';
+      });
+      h += '</section>';
+    });
+    document.getElementById('list').innerHTML = h;
+    Array.prototype.forEach.call(document.querySelectorAll('#list input'), function (c) {
+      c.onchange = function () { state[tab].done[c.dataset.id] = c.checked; persist(); draw(); };
+    });
+    var d = done(tab), t = total(tab);
+    document.getElementById('bar2').style.width = Math.round(d / t * 100) + '%';
+    document.getElementById('count').textContent = d === t ? 'সব কাজ শেষ ✓' : d + '/' + t + ' শেষ';
+    document.getElementById('when').textContent = tab === 'daily' ? 'আজকের কাজ' : tab === 'weekly' ? 'এই সপ্তাহের কাজ (শনি থেকে শুক্র)' : 'এই মাসের কাজ';
+  }
+
+  var armed = false, rb = document.getElementById('reset');
+  rb.onclick = function () {
+    if (!armed) { armed = true; rb.textContent = 'নিশ্চিত? আবার চাপুন'; setTimeout(function () { armed = false; rb.textContent = 'এই তালিকা নতুন করে শুরু'; }, 3000); return; }
+    state[tab].done = {}; armed = false; rb.textContent = 'এই তালিকা নতুন করে শুরু'; persist(); draw();
+  };
+  persist(); draw();
+})();
+</script>
+</body>
+</html>

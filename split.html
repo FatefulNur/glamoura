@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Extra Cost ভাগ · Glamoura</title>
+<meta name="description" content="ট্রান্সপোর্ট/কুরিয়ার খরচ SKU অনুযায়ী ভাগ করে Stock In-এর Extra Cost কলামে বসান।">
+<meta name="theme-color" content="#1d6b4e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="bar"></div>
+<main class="wrap">
+<header><h1>Extra Cost ভাগ</h1><p class="sub">ট্রান্সপোর্ট/কুরিয়ার খরচ SKU অনুযায়ী ভাগ করে Stock In-এর Extra Cost কলামে বসান।</p></header>
+
+<section class="card">
+<div class="row"><label>মোট Extra Cost ৳<input id="total" type="number" inputmode="decimal" value="300"></label>
+<label>কীভাবে ভাগ হবে<select id="mode"><option value="qty">পিস অনুযায়ী সমান</option><option value="value">কেনা দাম অনুযায়ী</option></select></label></div>
+<label style="margin-top:12px">লাইন (প্রতি লাইনে: SKU, পিস, ইউনিট কস্ট)
+<textarea id="lines" placeholder="TP01, 1, 650&#10;TP02, 2, 650"></textarea></label>
+</section>
+<section class="card" aria-live="polite"><h2>ফলাফল</h2><div class="tbl-scroll"><table id="out"></table></div>
+<div class="btns" style="margin-top:10px"><button class="btn" id="copy" type="button">Extra Cost কলামের জন্য কপি</button></div>
+<p class="sub" style="margin-top:8px;font-size:.9rem">কপি করলে শুধু প্রতিটি লাইনের মোট Extra Cost যায়, এক লাইনে একটি সংখ্যা। Stock In-এর Extra Cost (M) কলামে সরাসরি পেস্ট করুন। ওই কলামে লাইন-মোট বসে, প্রতি পিস নয়।</p></section>
+
+</main>
+<script src="assets/pathao.js"></script>
+<script src="assets/common.js"></script>
+<script>
+
+(function(){
+var $=function(i){return document.getElementById(i)},K='gl-split-v1',t=G.taka,res=[];
+var s=G.store.get(K,{});['total','mode','lines'].forEach(function(i){if(s[i]!=null)$(i).value=s[i]});
+function run(){
+ var tot=G.num($('total').value),mode=$('mode').value,rows=$('lines').value.split(/\n/).map(function(l){var p=l.split(',');return {sku:(p[0]||'').trim(),qty:G.num(p[1]),cost:G.num(p[2])}}).filter(function(r){return r.sku});
+ var w=rows.map(function(r){return mode==='qty'?r.qty:r.qty*r.cost}),sw=w.reduce(function(a,b){return a+b},0);
+ var out=[],acc=0;
+ rows.forEach(function(r,i){var x=sw?Math.round(tot*w[i]/sw):0;if(i===rows.length-1)x=Math.round(tot)-acc;acc+=x;out.push({sku:r.sku,qty:r.qty,line:x,per:r.qty?x/r.qty:0})});
+ res=out;
+ var h='<tr><th>SKU</th><th class="n">পিস</th><th class="n">Extra (লাইন)</th><th class="n">প্রতি পিস</th></tr>';
+ out.forEach(function(o){h+='<tr><td>'+G.esc(o.sku)+'</td><td class="n">'+o.qty+'</td><td class="n">'+t(o.line)+'</td><td class="n">'+t(Math.round(o.per*100)/100)+'</td></tr>'});
+ if(out.length)h+='<tr class="total"><td>মোট</td><td class="n">'+out.reduce(function(a,o){return a+o.qty},0)+'</td><td class="n">'+t(acc)+'</td><td></td></tr>';
+ $('out').innerHTML=out.length?h:'<tr><td class="sub">লাইন লিখুন।</td></tr>';
+ G.store.set(K,{total:$('total').value,mode:mode,lines:$('lines').value});
+}
+document.addEventListener('input',run);document.addEventListener('change',run);
+$('copy').onclick=function(){G.copy(res.map(function(o){return o.line}).join('\n'),this)};
+run();
+})();
+
+</script>
+</body>
+</html>

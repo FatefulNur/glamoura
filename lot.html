@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>লট প্ল্যানার · Glamoura</title>
+<meta name="description" content="লট কেনার আগে হিসাব: কত পিস বিক্রি হলে খরচ উঠবে, পুরো লটে কত লাভ হতে পারে।">
+<meta name="theme-color" content="#1d6b4e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="bar"></div>
+<main class="wrap">
+<header><h1>লট প্ল্যানার</h1><p class="sub">লট কেনার আগে হিসাব: কত পিস বিক্রি হলে খরচ উঠবে, পুরো লটে কত লাভ হতে পারে।</p></header>
+
+<section class="card">
+<div class="row">
+<label>লটের মোট কেনা খরচ ৳ (Extra Cost সহ)<input id="cost" type="number" inputmode="decimal" value="6500"></label>
+<label>মোট পিস<input id="pcs" type="number" inputmode="numeric" value="10"></label>
+<label>গড় বিক্রয় দাম ৳<input id="price" type="number" inputmode="decimal" value="799"></label>
+</div>
+<div class="row" style="margin-top:12px">
+<label>প্রতি অর্ডারে গড় ডেলিভারি + COD খরচ ৳ (কাস্টমার না দিলে)<input id="dcost" type="number" inputmode="decimal" value="0"></label>
+<label>প্রতি পিসে প্যাকিং + বিজ্ঞাপন ৳<input id="other" type="number" inputmode="decimal" value="0"></label>
+<label>কতটা বিক্রি হবে বলে আশা (%)<input id="st" type="number" inputmode="numeric" value="80"></label>
+</div></section>
+<section class="card" aria-live="polite"><h2>ফলাফল</h2><table id="out"></table><div class="note" id="warn" hidden style="margin-top:12px"></div></section>
+<p class="sub">ধরা হয়েছে প্রতি অর্ডারে ১ পিস। COD চার্জ পণ্যের দামের ওপর, রেট ক্যালকুলেটর পেজের সেটিং থেকে আসে।</p>
+
+</main>
+<script src="assets/pathao.js"></script>
+<script src="assets/common.js"></script>
+<script>
+
+(function(){
+var $=function(i){return document.getElementById(i)},rates=G.store.get('gl-rates-v1',null)||Pathao.DEFAULT_RATES,K='gl-lot-v1',t=G.taka;
+var ids=['cost','pcs','price','dcost','other','st'],s=G.store.get(K,{});ids.forEach(function(i){if(s[i]!=null)$(i).value=s[i]});
+function row(a,b,c){return '<tr class="'+(c||'')+'"><td>'+a+'</td><td class="n">'+b+'</td></tr>'}
+function run(){
+ var v={};ids.forEach(function(i){v[i]=$(i).value});G.store.set(K,v);
+ var cost=G.num(v.cost),pcs=G.num(v.pcs),price=G.num(v.price),per=pcs?cost/pcs:0;
+ var fee=price*rates.codPct/100,unit=price-fee-G.num(v.dcost)-G.num(v.other),margin=unit-per;
+ var be=unit>0?Math.ceil(cost/unit):null,sold=Math.round(pcs*G.num(v.st)/100),exp=sold*unit-cost;
+ $('out').innerHTML=row('প্রতি পিস কেনা খরচ',t(Math.round(per*100)/100))
+  +row('প্রতি পিস COD চার্জ',t(Math.round(fee*100)/100))
+  +row('প্রতি পিস হাতে থাকে (কেনা খরচের আগে)',t(Math.round(unit*100)/100))
+  +row('প্রতি পিস লাভ','<span class="'+(margin<0?'neg':'pos')+'">'+t(Math.round(margin*100)/100)+'</span>','sub')
+  +row('খরচ উঠতে বিক্রি লাগবে',be==null?'সম্ভব না':be+' পিস'+(pcs?' ('+Math.round(be/pcs*100)+'%)':''),'total')
+  +row('সব বিক্রি হলে লাভ','<span class="'+(unit*pcs-cost<0?'neg':'pos')+'">'+t(Math.round(unit*pcs-cost))+'</span>')
+  +row(v.st+'% বিক্রি ('+sold+' পিস) হলে','<span class="big '+(exp<0?'neg':'')+'">'+t(Math.round(exp))+'</span>','total');
+ var w=[];if(be==null)w.push('এই দামে প্রতি পিসে খরচই ওঠে না।');else if(be>pcs)w.push('সব পিস বিক্রি করলেও খরচ উঠবে না।');else if(pcs&&be/pcs>0.8)w.push('৮০%-এর বেশি বিক্রি না হলে খরচ উঠবে না, ঝুঁকি বেশি।');
+ $('warn').hidden=!w.length;$('warn').innerHTML=w.join('<br>');
+}
+document.addEventListener('input',run);run();
+})();
+
+</script>
+</body>
+</html>

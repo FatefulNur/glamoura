@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>মেসেজ টেমপ্লেট · Glamoura</title>
+<meta name="description" content="কাস্টমার আর Pathao Support-এর জন্য তৈরি মেসেজ। ঘর পূরণ করুন, কপি করুন।">
+<meta name="theme-color" content="#1d6b4e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="bar"></div>
+<main class="wrap">
+<header><h1>মেসেজ টেমপ্লেট</h1><p class="sub">কাস্টমার আর Pathao Support-এর জন্য তৈরি মেসেজ। ঘর পূরণ করুন, কপি করুন।</p></header>
+
+<section class="card">
+<div class="row">
+<label>কাস্টমারের নাম<input id="name" placeholder="যেমন রিয়া"></label>
+<label>অর্ডার নম্বর<input id="oid" placeholder="যেমন O-1042"></label>
+<label>Tracking ID<input id="trk" placeholder="Pathao Tracking ID"></label>
+<label>COD / মোট টাকা ৳<input id="amt" inputmode="decimal"></label>
+</div></section>
+<div id="list" class="wrap"></div>
+
+</main>
+<script src="assets/pathao.js"></script>
+<script src="assets/common.js"></script>
+<script>
+
+(function(){
+var $=function(i){return document.getElementById(i)},K='gl-msg-v1';
+var T=[
+['অর্ডার কনফার্ম','{n}, আপনার অর্ডার {o} কনফার্ম হয়েছে। ডেলিভারির সময় {a} দিতে হবে। ঠিকানা আর ফোন নম্বর ঠিক আছে কি না একটু দেখে নিন। ধন্যবাদ, Glamoura।'],
+['পার্সেল পাঠানো হয়েছে','{n}, আপনার অর্ডার {o} Pathao-র মাধ্যমে পাঠানো হয়েছে। Tracking ID: {t}। ডেলিভারি ম্যান ফোন করবে, নম্বরটা চালু রাখবেন। ডেলিভারির সময় {a} দিতে হবে।'],
+['ডেলিভারি চার্জ জানতে চাইলে','ডেলিভারি চার্জ নির্ভর করে ঠিকানা আর ওজনের ওপর। চট্টগ্রাম শহরে সাধারণত ৳৬০–৯০, ঢাকায় ৳১১০–১৭০, অন্য জেলায় ৳১২০–১৮০। আপনার ঠিকানা জানালে সঠিক চার্জ বলে দেব।'],
+['অগ্রিম চাওয়া','{n}, অর্ডার নিশ্চিত করতে ডেলিভারি চার্জ {a} bKash/Nagad-এ অগ্রিম দিলে ভালো হয়। পাঠানোর পর স্ক্রিনশট বা Transaction ID পাঠাবেন। ধন্যবাদ।'],
+['ডেলিভারি না নিলে/ফোন না ধরলে','{n}, আপনার অর্ডার {o} ডেলিভারির জন্য গিয়েছিল, কিন্তু ফোনে পাওয়া যায়নি। আজ বা কাল ডেলিভারি নেওয়া সম্ভব হলে জানান, নইলে পার্সেল ফেরত আসবে।'],
+['Pathao Support: হিসাবে গরমিল','আসসালামু আলাইকুম। আমি Glamoura-র মার্চেন্ট, চট্টগ্রাম। Tracking ID {t} (অর্ডার {o}) এর COD {a} সংগ্রহ হয়েছে, কিন্তু আমার সেটেলমেন্টে মিলছে না। অনুগ্রহ করে এই পার্সেলের সেটেলমেন্ট স্ট্যাটাস আর কাটা চার্জের বিবরণ জানাবেন। ধন্যবাদ।'],
+['Pathao Support: পার্সেল আটকে আছে','আসসালামু আলাইকুম। Tracking ID {t} (অর্ডার {o}) পার্সেলটির স্ট্যাটাস অনেকদিন একই আছে। অনুগ্রহ করে বর্তমান অবস্থা জানাবেন এবং দ্রুত ডেলিভারির ব্যবস্থা করবেন। ধন্যবাদ।']
+];
+var ids=['name','oid','trk','amt'],s=G.store.get(K,{});ids.forEach(function(i){if(s[i]!=null)$(i).value=s[i]});
+var list=$('list');
+T.forEach(function(x,i){var d=document.createElement('section');d.className='card';d.innerHTML='<h2>'+x[0]+'</h2><textarea readonly id="m'+i+'"></textarea><div class="btns" style="margin-top:8px"><button class="btn sm" type="button">কপি করুন</button></div>';
+ d.querySelector('button').onclick=function(){G.copy($('m'+i).value,this)};list.appendChild(d)});
+function run(){
+ var v={};ids.forEach(function(i){v[i]=$(i).value});G.store.set(K,v);
+ var f=function(x,y){return v[x]||'['+y+']'};
+ T.forEach(function(x,i){$('m'+i).value=x[1].replace(/\{n\}/g,f('name','নাম')).replace(/\{o\}/g,f('oid','অর্ডার নম্বর')).replace(/\{t\}/g,f('trk','Tracking ID')).replace(/\{a\}/g,v.amt?'৳'+v.amt:'[টাকা]')});
+}
+document.addEventListener('input',run);run();
+})();
+
+</script>
+</body>
+</html>

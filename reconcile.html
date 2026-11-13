@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pathao হিসাব মেলান · Glamoura</title>
+<meta name="description" content="Pathao কত টাকা পাঠানোর কথা, আর কত এলো, মিলিয়ে দেখুন।">
+<meta name="theme-color" content="#1d6b4e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="bar"></div>
+<main class="wrap">
+<header><h1>Pathao হিসাব মেলান</h1><p class="sub">Pathao কত টাকা পাঠানোর কথা, আর কত এলো, মিলিয়ে দেখুন।</p></header>
+
+<section class="card">
+<h2>পার্সেল তালিকা</h2>
+<div class="tbl-scroll"><table class="items" id="rows"><thead><tr><th>অর্ডার</th><th>COD ৳</th><th>পণ্যের দাম ৳</th><th>রুট</th><th>kg</th><th>অবস্থা</th><th>ফেরত চার্জ ৳</th><th></th></tr></thead><tbody></tbody></table></div>
+<div class="btns" style="margin-top:10px"><button class="btn ghost sm" id="add" type="button">+ পার্সেল</button><button class="btn ghost sm" id="clear" type="button">তালিকা খালি করুন</button></div>
+</section>
+<section class="card" aria-live="polite">
+<h2>ফলাফল</h2><table id="out"></table>
+<div class="row" style="margin-top:12px"><label>Pathao আসলে যা পাঠিয়েছে ৳<input id="actual" type="number" inputmode="decimal" placeholder="যেমন 4350"></label></div>
+<div id="diff" style="margin-top:10px"></div>
+</section>
+<p class="note">ফেরত পার্সেলের চার্জ আমার জানা নেই। Pathao-এর স্টেটমেন্ট দেখে ঘরে বসান, ফাঁকা থাকলে ০ ধরা হবে। Delivered পার্সেলে কুরিয়ার আর COD চার্জ বাদ যায়। COD চার্জ পণ্যের দামের ১%, তাই পণ্যের দাম দিন। ফাঁকা থাকলে পুরো COD-এর ১% ধরা হবে, ফলে সামান্য পার্থক্য আসতে পারে।</p>
+
+</main>
+<script src="assets/pathao.js"></script>
+<script src="assets/common.js"></script>
+<script>
+
+(function(){
+var $=function(i){return document.getElementById(i)},rates=G.store.get('gl-rates-v1',null)||Pathao.DEFAULT_RATES,K='gl-recon-v1',tb=document.querySelector('#rows tbody');
+var routeOpts=Object.keys(rates.routes).map(function(k){return '<option value="'+k+'">'+rates.routes[k].label+'</option>'}).join('');
+function add(v){v=v||{};var tr=document.createElement('tr');
+ tr.innerHTML='<td><input data-k="id" style="width:90px" value="'+G.esc(v.id||'')+'"></td><td><input data-k="cod" type="number" inputmode="decimal" style="width:90px" value="'+(v.cod||'')+'"></td>'
+ +'<td><input data-k="pp" type="number" inputmode="decimal" style="width:90px" placeholder="ঐচ্ছিক" value="'+(v.pp||'')+'"></td>'
+ +'<td><select data-k="route">'+routeOpts+'</select></td><td><input data-k="kg" type="number" step="0.05" style="width:70px" value="'+(v.kg||0.6)+'"></td>'
+ +'<td><select data-k="st"><option value="D">Delivered</option><option value="R">Returned</option></select></td>'
+ +'<td><input data-k="rc" type="number" inputmode="decimal" style="width:80px" value="'+(v.rc||'')+'"></td><td><button class="btn ghost sm" type="button">✕</button></td>';
+ tr.querySelector('[data-k=route]').value=v.route||Object.keys(rates.routes)[0];tr.querySelector('[data-k=st]').value=v.st||'D';
+ tr.querySelector('button').onclick=function(){if(tb.children.length>1){tr.remove();run()}};tb.appendChild(tr)}
+function read(){return Array.prototype.map.call(tb.children,function(tr){var o={};Array.prototype.forEach.call(tr.querySelectorAll('input,select'),function(i){o[i.dataset.k]=i.value});return o})}
+function run(){
+ var rs=read(),t=G.taka,d=0,dc=0,cour=0,fee=0,pay=0,ret=0,rl=0;
+ rs.forEach(function(r){
+  if(r.st==='D'){var cod=G.num(r.cod),c=Pathao.courier(rates,r.route,G.num(r.kg)),f=Pathao.codFee(rates,cod,G.num(r.pp)>0?G.num(r.pp):cod,'product');
+   d++;dc+=cod;cour+=c;fee+=f;pay+=cod-c-f}
+  else{ret++;rl+=G.num(r.rc)}
+ });
+ var net=pay-rl;
+ function row(a,b,c){return '<tr class="'+(c||'')+'"><td>'+a+'</td><td class="n">'+b+'</td></tr>'}
+ $('out').innerHTML=row('Delivered পার্সেল',d)+row('Returned পার্সেল',ret)+row('Delivered-এর COD মোট',t(dc))+row('কুরিয়ার চার্জ মোট','− '+t(cour))+row('COD চার্জ মোট','− '+t(fee))
+  +(rl?row('ফেরত চার্জ মোট','− '+t(rl)):'')+row('Pathao-র পাঠানোর কথা','<span class="big">'+t(net)+'</span>','total');
+ var a=$('actual').value;
+ if(a===''){$('diff').innerHTML=''}else{var df=G.num(a)-net;
+  $('diff').innerHTML=Math.abs(df)<0.5?'<span class="pos">✓ হিসাব মিলেছে।</span>':'<span class="neg">পার্থক্য '+t(df)+(df<0?' (কম এসেছে)':' (বেশি এসেছে)')+'</span><br><small style="color:var(--muted)">Pathao স্টেটমেন্টের প্রতিটি অর্ডার মিলিয়ে দেখুন, না মিললে Support-এ জানান (মেসেজ পেজে টেমপ্লেট আছে)।</small>'}
+ G.store.set(K,{rows:rs,actual:a});
+}
+var s=G.store.get(K,null);(s&&s.rows&&s.rows.length?s.rows:[{}]).forEach(add);if(s&&s.actual)$('actual').value=s.actual;
+document.addEventListener('input',run);document.addEventListener('change',run);
+$('add').onclick=function(){add();run()};
+$('clear').onclick=function(){tb.innerHTML='';add();$('actual').value='';run()};
+run();
+})();
+
+</script>
+</body>
+</html>

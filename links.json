@@ -1,0 +1,30 @@
+{
+  "_howto": "নতুন লিংক যোগ করতে সংশ্লিষ্ট group-এর items-এ একটি { ... } ব্লক যোগ করুন (আগেরটির পরে কমা)। icon: calc, tag, check, split, box, chat, doc, link। href: এই সাইটের ফাইলের নাম অথবা পুরো https:// ঠিকানা। এই _howto লাইনটি পেজে দেখায় না।",
+  "siteTitle": "Glamoura",
+  "siteSubtitle": "অর্ডার, ডেলিভারি আর হিসাব, এক জায়গায়।",
+  "groups": [
+    {
+      "title": "অর্ডারের হিসাব",
+      "items": [
+        { "title": "অর্ডার ক্যালকুলেটর", "description": "Pathao কুরিয়ার চার্জ, ১% COD চার্জ আর নিট লাভসহ পুরো অর্ডারের হিসাব।", "href": "calc.html", "tag": "মূল টুল", "icon": "calc" },
+        { "title": "দাম নির্ধারণ", "description": "কেনা দাম আর ডেলিভারি খরচ ধরে কত দামে বিক্রি করলে কাঙ্ক্ষিত লাভ থাকবে।", "href": "price.html", "tag": "টুল", "icon": "tag" },
+        { "title": "Pathao হিসাব মেলান", "description": "Delivered আর Returned পার্সেল ধরে Pathao-র পাঠানোর কথা কত, আসলে কত এলো।", "href": "reconcile.html", "tag": "টুল", "icon": "check" }
+      ]
+    },
+    {
+      "title": "মাল ও লট",
+      "items": [
+        { "title": "Extra Cost ভাগ", "description": "ট্রান্সপোর্ট খরচ SKU অনুযায়ী ভাগ, Stock In-এ সরাসরি পেস্ট করার মতো।", "href": "split.html", "tag": "টুল", "icon": "split" },
+        { "title": "লট প্ল্যানার", "description": "লট কেনার আগে দেখুন কত পিস বিক্রি হলে খরচ উঠবে।", "href": "lot.html", "tag": "টুল", "icon": "box" }
+      ]
+    },
+    {
+      "title": "রোজকার কাজ",
+      "items": [
+        { "title": "Checklist", "description": "দৈনিক, সাপ্তাহিক আর মাসিক কাজ টিক দিয়ে মিলিয়ে নিন।", "href": "checklist.html", "tag": "প্রতিদিন", "icon": "check" },
+        { "title": "মেসেজ টেমপ্লেট", "description": "কাস্টমার আর Pathao Support-এর জন্য তৈরি মেসেজ, কপি করে পাঠান।", "href": "messages.html", "tag": "টুল", "icon": "chat" },
+        { "title": "শিট গাইড", "description": "প্রতিটি ট্যাবের কাজ, কোথায় লিখবেন আর কী অটো, সংক্ষেপে।", "href": "guide.html", "tag": "গাইড", "icon": "doc" }
+      ]
+    }
+  ]
+}

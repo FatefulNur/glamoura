@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>অর্ডার ক্যালকুলেটর · Glamoura</title>
+<meta name="description" content="Pathao কুরিয়ার চার্জ, COD চার্জ আর নিট লাভসহ অর্ডারের পুরো হিসাব।">
+<meta name="theme-color" content="#1d6b4e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="bar"></div>
+<main class="wrap">
+  <header>
+    <h1>অর্ডার ক্যালকুলেটর</h1>
+    <p class="sub">পণ্যের দাম, Pathao কুরিয়ার চার্জ, COD চার্জ (১%) আর নিট লাভ, সব আলাদা করে।</p>
+  </header>
+
+  <section class="card">
+    <h2>পণ্য</h2>
+    <div class="tbl-scroll">
+      <table class="items" id="items">
+        <thead><tr><th>পণ্য / SKU</th><th>পিস</th><th>বিক্রয় দাম</th><th>কেনা দাম</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="btns" style="margin-top:10px"><button class="btn ghost sm" id="addRow" type="button">+ আরেকটি পণ্য</button></div>
+  </section>
+
+  <section class="card">
+    <h2>ডেলিভারি</h2>
+    <div class="row">
+      <label>রুট
+        <select id="route"></select>
+      </label>
+      <label>প্রতি পিসের ওজন (kg)
+        <input id="wpp" type="number" inputmode="decimal" step="0.05" min="0" value="0.6">
+      </label>
+      <label>মোট ওজন (kg), ফাঁকা থাকলে অটো
+        <input id="wtotal" type="number" inputmode="decimal" step="0.05" min="0" placeholder="অটো">
+      </label>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <label>ডেলিভারি চার্জ কে দেবে
+        <select id="delivery">
+          <option value="customer">কাস্টমার (পুরো চার্জ)</option>
+          <option value="free">আমি (ফ্রি ডেলিভারি)</option>
+          <option value="custom">নির্দিষ্ট টাকা নেব</option>
+        </select>
+      </label>
+      <label id="customWrap" hidden>কাস্টমারের কাছে নেব (৳)
+        <input id="customCharge" type="number" inputmode="decimal" min="0" value="100">
+      </label>
+      <label>ছাড় (৳)
+        <input id="discount" type="number" inputmode="decimal" min="0" value="0">
+      </label>
+      <label>অগ্রিম পেয়েছি (bKash/Nagad) ৳
+        <input id="advance" type="number" inputmode="decimal" min="0" value="0">
+      </label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>অন্যান্য খরচ <span class="tag">ঐচ্ছিক</span></h2>
+    <div class="row">
+      <label>প্যাকিং (৳)<input id="packing" type="number" inputmode="decimal" min="0" value="0"></label>
+      <label>বিজ্ঞাপন / অর্ডার (৳)<input id="adCost" type="number" inputmode="decimal" min="0" value="0"></label>
+      <label>ফেরত গেলে Pathao চার্জ (৳)<input id="returnCharge" type="number" inputmode="decimal" min="0" placeholder="জানা থাকলে"></label>
+      <label>COD চার্জ কীসের ওপর
+        <select id="codBase">
+          <option value="product">শুধু পণ্যের দাম (নিয়ম অনুযায়ী)</option>
+          <option value="total">পুরো COD টাকা (ডেলিভারিসহ)</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <section class="card" aria-live="polite">
+    <h2>হিসাব</h2>
+    <table id="out"></table>
+    <div class="note" id="warn" style="margin-top:12px" hidden></div>
+  </section>
+
+  <section class="card">
+    <h2>কাস্টমারকে পাঠানোর মেসেজ</h2>
+    <textarea id="msg" readonly></textarea>
+    <div class="btns" style="margin-top:8px"><button class="btn" id="copyMsg" type="button">কপি করুন</button></div>
+  </section>
+
+  <details>
+    <summary>Pathao রেট (বদলালে এখানে ঠিক করুন)</summary>
+    <p class="sub" style="margin-bottom:10px">Pathao Support থেকে পাওয়া রেট। মার্চেন্ট লোকেশন চট্টগ্রাম ধরা হয়েছে। রেট বদলালে নিজে ঠিক করে নিন, নিচের সব হিসাব সাথে সাথে বদলাবে।</p>
+    <div class="tbl-scroll">
+      <table id="rates"></table>
+    </div>
+    <div class="btns" style="margin-top:10px"><button class="btn ghost sm" id="resetRates" type="button">আগের রেটে ফিরুন</button></div>
+    <p class="sub" style="margin-top:10px;font-size:.9rem">২ কেজির বেশি হলে প্রতি অতিরিক্ত কেজি (শুরু হওয়া কেজি ধরে) আলাদা যোগ হয়। একই দিনে ডেলিভারি শুধু ঢাকায়, তাই চট্টগ্রাম থেকে প্রযোজ্য নয়। ফেরত পার্সেলের চার্জ আমার জানা নেই। Pathao থেকে জেনে ওপরের ঘরে বসান।</p>
+  </details>
+</main>
+
+<script src="assets/pathao.js"></script>
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var KEY = 'gl-calc-v1', RKEY = 'gl-rates-v1';
+  var $ = function (id) { return document.getElementById(id); };
+  var rates = G.store.get(RKEY, null) || JSON.parse(JSON.stringify(Pathao.DEFAULT_RATES));
+  var tbody = document.querySelector('#items tbody');
+
+  function addRow(v) {
+    v = v || {};
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><input data-k="name" placeholder="যেমন TP01" value="' + G.esc(v.name || '') + '"></td>' +
+      '<td><input data-k="qty" type="number" inputmode="numeric" min="0" value="' + (v.qty == null ? 1 : v.qty) + '"></td>' +
+      '<td><input data-k="price" type="number" inputmode="decimal" min="0" value="' + (v.price == null ? '' : v.price) + '"></td>' +
+      '<td><input data-k="cost" type="number" inputmode="decimal" min="0" value="' + (v.cost == null ? '' : v.cost) + '"></td>' +
+      '<td><button class="btn ghost sm" type="button" aria-label="মুছুন">✕</button></td>';
+    tr.querySelector('button').onclick = function () { if (tbody.children.length > 1) { tr.remove(); run(); } };
+    tbody.appendChild(tr);
+  }
+
+  function items() {
+    return Array.prototype.map.call(tbody.children, function (tr) {
+      var o = {};
+      Array.prototype.forEach.call(tr.querySelectorAll('input'), function (i) { o[i.dataset.k] = i.value; });
+      return o;
+    });
+  }
+
+  function buildRoutes() {
+    $('route').innerHTML = Object.keys(rates.routes).map(function (k) {
+      return '<option value="' + k + '">' + rates.routes[k].label + '</option>';
+    }).join('');
+  }
+
+  function buildRates() {
+    var h = '<tr><th>রুট</th><th class="n">≤ ০.৫kg</th><th class="n">≤ ১kg</th><th class="n">≤ ২kg</th><th class="n">অতিরিক্ত/kg</th></tr>';
+    Object.keys(rates.routes).forEach(function (k) {
+      var r = rates.routes[k];
+      h += '<tr><td>' + r.label + '</td>' + [0, 1, 2].map(function (i) {
+        return '<td><input class="rt" data-r="' + k + '" data-i="' + i + '" type="number" min="0" value="' + r.tiers[i] + '" style="width:80px"></td>';
+      }).join('') + '<td><input class="rt" data-r="' + k + '" data-i="e" type="number" min="0" value="' + r.extra + '" style="width:80px"></td></tr>';
+    });
+    h += '<tr><td>COD চার্জ (%)</td><td colspan="4"><input class="rt" data-r="cod" type="number" step="0.1" min="0" value="' + rates.codPct + '" style="width:80px"></td></tr>';
+    $('rates').innerHTML = h;
+    Array.prototype.forEach.call(document.querySelectorAll('.rt'), function (i) {
+      i.oninput = function () {
+        var v = G.num(i.value), r = i.dataset.r;
+        if (r === 'cod') rates.codPct = v;
+        else if (i.dataset.i === 'e') rates.routes[r].extra = v;
+        else rates.routes[r].tiers[+i.dataset.i] = v;
+        G.store.set(RKEY, rates); run();
+      };
+    });
+  }
+
+  function readInput() {
+    var its = items().map(function (i) { return { qty: G.num(i.qty), price: G.num(i.price), cost: G.num(i.cost) }; });
+    var pcs = its.reduce(function (s, i) { return s + i.qty; }, 0);
+    var kg = $('wtotal').value !== '' ? G.num($('wtotal').value) : pcs * G.num($('wpp').value);
+    return {
+      items: its, pcs: pcs, kg: kg, route: $('route').value, delivery: $('delivery').value,
+      customCharge: G.num($('customCharge').value), discount: G.num($('discount').value), advance: G.num($('advance').value),
+      packing: G.num($('packing').value), adCost: G.num($('adCost').value), returnCharge: G.num($('returnCharge').value),
+      codBase: $('codBase').value
+    };
+  }
+
+  function row(label, val, cls, extra) {
+    return '<tr class="' + (cls || '') + '"><td>' + label + (extra ? '<br><small style="color:var(--muted)">' + extra + '</small>' : '') + '</td><td class="n">' + val + '</td></tr>';
+  }
+
+  function run() {
+    var o = readInput(), r = Pathao.order(rates, o), t = G.taka;
+    var warn = [];
+    var codNote = o.codBase === 'total' ? 'পুরো COD ' + t(r.cod) + ' এর ' + G.bn(rates.codPct) + '%' : 'পণ্যের দাম ' + t(r.product) + ' এর ' + G.bn(rates.codPct) + '%';
+    var h = '';
+    h += row('পণ্যের দাম', t(r.gross), '', G.bn(o.pcs) + ' পিস');
+    if (r.discount) h += row('ছাড়', '− ' + t(r.discount));
+    h += row('পণ্য মোট', t(r.product), 'sub');
+    h += row('কাস্টমারের ডেলিভারি চার্জ', '+ ' + t(r.chargeToCustomer), '', o.delivery === 'free' ? 'ফ্রি ডেলিভারি, খরচ আপনার' : '');
+    if (r.advance) h += row('অগ্রিম', '− ' + t(r.advance));
+    h += row('কাস্টমারের কাছ থেকে COD', t(r.cod), 'total');
+    h += row('Pathao কুরিয়ার চার্জ', '− ' + t(r.courier), '', 'ওজন ' + G.bn(Math.round(o.kg * 100) / 100) + ' kg');
+    h += row('Pathao COD চার্জ', '− ' + t(r.codFee), '', r.cod > 0 ? codNote : 'COD নেই, তাই চার্জ নেই');
+    h += row('মোট ডেলিভারি খরচ', t(r.deliveryCost), 'sub');
+    h += row('Pathao থেকে পাবেন', t(r.payout), 'total');
+    if (r.advance) h += row('অগ্রিমসহ মোট হাতে আসবে', t(r.received), 'sub');
+    h += row('পণ্যের কেনা দাম', '− ' + t(r.productCost));
+    if (r.extra) h += row('প্যাকিং + বিজ্ঞাপন', '− ' + t(r.extra));
+    h += row('নিট লাভ', '<span class="big ' + (r.profit < 0 ? 'neg' : '') + '">' + t(r.profit) + '</span>', 'total', 'মার্জিন ' + G.bn(r.margin) + '%');
+    if (r.returnLoss !== null) h += row('ফেরত গেলে ক্ষতি', '− ' + t(r.returnLoss), '', 'ফেরত চার্জ + প্যাকিং/বিজ্ঞাপন');
+    $('out').innerHTML = h;
+
+    if (r.profit < 0) warn.push('এই অর্ডারে লোকসান হচ্ছে।');
+    if (o.kg > 2) warn.push('ওজন ২ কেজির বেশি, অতিরিক্ত কেজির চার্জ যোগ হয়েছে।');
+    if (o.pcs && !o.items.every(function (i) { return i.price > 0; })) warn.push('কিছু পণ্যের বিক্রয় দাম দেওয়া হয়নি।');
+    if (o.returnCharge === 0) warn.push('ফেরত গেলে Pathao কত কাটে আমার জানা নেই, তাই সেটা হিসাবে ধরিনি।');
+    $('warn').hidden = !warn.length; $('warn').innerHTML = warn.join('<br>');
+
+    var lines = ['আসসালামু আলাইকুম। আপনার অর্ডার কনফার্ম হয়েছে।', '', 'পণ্যের দাম: ' + t(r.product)];
+    lines.push(o.delivery === 'free' ? 'ডেলিভারি চার্জ: ফ্রি' : 'ডেলিভারি চার্জ: ' + t(r.chargeToCustomer));
+    if (r.advance) lines.push('অগ্রিম পেয়েছি: ' + t(r.advance));
+    lines.push('ডেলিভারির সময় দিতে হবে: ' + t(r.cod), '', 'ধন্যবাদ, Glamoura।');
+    $('msg').value = lines.join('\n');
+
+    $('customWrap').hidden = o.delivery !== 'custom';
+    save();
+  }
+
+  function save() {
+    var ids = ['route', 'wpp', 'wtotal', 'delivery', 'customCharge', 'discount', 'advance', 'packing', 'adCost', 'returnCharge', 'codBase'], s = { items: items() };
+    ids.forEach(function (i) { s[i] = $(i).value; });
+    G.store.set(KEY, s);
+  }
+
+  function load() {
+    var s = G.store.get(KEY, null);
+    if (s) {
+      ['route', 'wpp', 'wtotal', 'delivery', 'customCharge', 'discount', 'advance', 'packing', 'adCost', 'returnCharge', 'codBase'].forEach(function (i) {
+        if (s[i] != null && $(i)) $(i).value = s[i];
+      });
+      (s.items && s.items.length ? s.items : [{}]).forEach(addRow);
+    } else addRow({ price: 799, cost: 650 });
+  }
+
+  buildRoutes(); buildRates(); load();
+  document.addEventListener('input', function (e) { if (!e.target.classList.contains('rt')) run(); });
+  document.addEventListener('change', function (e) { if (!e.target.classList.contains('rt')) run(); });
+  $('addRow').onclick = function () { addRow(); };
+  $('copyMsg').onclick = function () { G.copy($('msg').value, this); };
+  $('resetRates').onclick = function () { rates = JSON.parse(JSON.stringify(Pathao.DEFAULT_RATES)); G.store.set(RKEY, rates); buildRoutes(); buildRates(); load2(); run(); };
+  function load2() { var s = G.store.get(KEY, null); if (s && s.route) $('route').value = s.route; }
+  run();
+})();
+</script>
+</body>
+</html>
